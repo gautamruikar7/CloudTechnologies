@@ -1,0 +1,46 @@
+--- Query to create schema on Hive 
+--- using delimited fields while entering csv data
+
+CREATE TABLE IF NOT EXISTS StackExData(
+Id String,
+PostTypeId String,
+AcceptedAnswerId String,
+ParentId String,
+CreationDate timestamp,
+DeletionDate timestamp,
+Score int,
+ViewCount int,
+Body String,
+OwnerUserId String,
+OwnerDisplayName String,
+LastEditorUserId int,
+LastEditorDisplayName String,
+LastEditDate timestamp,
+LastActivityDate timestamp,
+Title String,
+Tags String,
+AnswerCount int,
+CommentCount int,
+FavoriteCount int,
+ClosedDate timestamp,
+CommunityOwnedDate timestamp)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+
+--- Loading data into Hive schema created in the previous step
+--- from Google's Cloud Storage.
+
+LOAD DATA INPATH 'gs://dataproc-staging-us-central1-961644655839-gzcmgvmv/cleaned_data.csv' INTO TABLE StackExData;
+
+---The top 10 posts by score 
+
+SELECT OWNERDISPLAYNAME,TITLE,SCORE,BODY FROM STACKEXDATA ORDER BY SCORE DESC LIMIT 10;
+
+---The top 10 users by post score
+
+SELECT OWNERUSERID,OWNERDISPLAYNAME,SUM(SCORE) AS TOTAL_SCORE FROM STACKEXDATA GROUP BY OWNERUSERID,OWNERDISPLAYNAME ORDER BY TOTAL_SCORE DESC LIMIT 10;
+
+---The number of distinct users, who used the word “cloud” in one of their posts
+
+SELECT COUNT(DISTINCT(OwnerUserId)) AS NO_OF_USERS FROM STACKEXDATA WHERE TITLE LIKE '% cloud %' OR BODY LIKE '% cloud %';
+
